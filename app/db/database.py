@@ -5,7 +5,8 @@ class Database:
     client: AsyncIOMotorClient = None
 
     def connect(self):
-        self.client = AsyncIOMotorClient(settings.MONGO_URL)
+        # Set timeout to 5s so Vercel doesn't kill the function (default 10s limit)
+        self.client = AsyncIOMotorClient(settings.MONGO_URL, serverSelectionTimeoutMS=5000)
 
     def close(self):
         if self.client:
