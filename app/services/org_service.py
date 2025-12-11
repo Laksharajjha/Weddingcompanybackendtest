@@ -5,9 +5,17 @@ from app.core.security import get_password_hash
 
 class OrganizationService:
     @staticmethod
-    async def create_organization(payload: OrgCreate):
-        # 1. Check duplicate name
-        existing_org = await db.get_db()["organizations"].find_one({"name": payload.name})
+    async def create_organization(self, payload: OrgCreate):
+        # DEBUG: Verify what we received
+        if len(payload.password) < 73:
+             # Should be fine, but let's prove it
+             pass
+        else:
+             # This should have been caught by Pydantic
+             raise ValueError(f"Password too long in Service! Len: {len(payload.password)}")
+
+        # Check existing
+        existing_org = await db.get_db()["organizations"].find_one({"email": payload.email})
         if existing_org:
             raise HTTPException(status_code=400, detail="Organization name already taken")
         
