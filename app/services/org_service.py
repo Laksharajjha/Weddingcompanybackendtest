@@ -5,7 +5,7 @@ from app.core.security import get_password_hash
 
 class OrganizationService:
     @staticmethod
-    async def create_organization(self, payload: OrgCreate):
+    async def create_organization(payload: OrgCreate):
         # DEBUG: Verify what we received
         if len(payload.password) < 73:
              # Should be fine, but let's prove it
