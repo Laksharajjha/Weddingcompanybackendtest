@@ -10,11 +10,13 @@ except Exception as e:
 
     @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
     async def catch_all(path: str):
+        from app.db.database import db
         return JSONResponse(
             status_code=500, 
             content={
                 "error": "Application Startup Failed", 
                 "detail": str(e), 
-                "trace": traceback.format_exc()
+                "trace": traceback.format_exc(),
+                "db_client_initialized": db.client is not None
             }
         )
