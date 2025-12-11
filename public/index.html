@@ -127,7 +127,10 @@
         createApp({
             data() {
                 return {
-                    apiBaseUrl: 'http://127.0.0.1:8000', // Default for local dev
+                    // Automatically use current origin if not running locally, otherwise default to local backend
+                    apiBaseUrl: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                        ? 'http://127.0.0.1:8000' 
+                        : window.location.origin, 
                     token: null,
                     loading: false,
                     createForm: { name: '', email: '', password: '' },
@@ -140,28 +143,36 @@
             methods: {
                 log(method, url, data, type = 'INFO') {
                     const time = new Date().toLocaleTimeString();
-                    this.logs.unshift({ time, method, url, data: JSON.stringify(data, null, 2), type });
+                    this.logs.unshift({ time, method, url, data: typeof data === 'string' ? data : JSON.stringify(data, null, 2), type });
                 },
                 async request(method, endpoint, body = null, auth = false) {
                     this.loading = true;
-                    const url = `${this.apiBaseUrl}${endpoint}`;
+                    // Ensure no double slashes if apiBaseUrl ends with /
+                    const baseUrl = this.apiBaseUrl.replace(/\/$/, ""); 
+                    const url = `${baseUrl}${endpoint}`;
                     const headers = { 'Content-Type': 'application/json' };
                     if (auth && this.token) headers['Authorization'] = `Bearer ${this.token}`;
 
                     try {
                         const opts = { method, headers };
                         if (body) opts.body = JSON.stringify(body);
-
+                        
                         const res = await fetch(url, opts);
-                        const data = await res.json();
-
+                        let data;
+                        try {
+                             data = await res.json();
+                        } catch (err) {
+                            data = { detail: "Non-JSON response (possibly 404 or 500 HTML)" };
+                        }
+                        
                         this.log(method, endpoint, data, res.ok ? 'SUCCESS' : 'ERROR');
-
+                        
                         if (!res.ok) throw new Error(data.detail || 'Request failed');
                         return data;
                     } catch (e) {
                         console.error(e);
-                        return null; // Handled in log
+                        this.log(method, endpoint, e.message, 'ERROR'); // Log error to UI
+                        return null; 
                     } finally {
                         this.loading = false;
                     }
