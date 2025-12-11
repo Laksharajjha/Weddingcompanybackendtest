@@ -22,7 +22,8 @@ class OrganizationService:
         # Save Org Metadata
         org_data = {
             "name": payload.name,
-            "collection_name": f"org_{payload.name}"
+            "collection_name": f"org_{payload.name}",
+            "connection_uri": "default_cluster"  # identifying which cluster this tenant lives in
         }
         await db.get_db()["organizations"].insert_one(org_data)
 

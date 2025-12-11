@@ -6,6 +6,25 @@
 - **Deployment**: Vercel Serverless
 - **Pattern**: Multi-tenancy with **Single Database, Dynamic Collections** strategy.
 
+### Architecture Diagram
+```mermaid
+graph TD
+    Client[Vue.js Frontend] -->|Auth Token| API[FastAPI Server]
+    API -->|Auth & Meta| MasterDB[(Master DB)]
+    MasterDB -->|Users| UsersCol[Users Collection]
+    MasterDB -->|Org Metadata| OrgCol[Orgs Collection]
+    
+    API -->|Data Access| TenantCols{Dynamic Collections}
+    TenantCols -->|Tenant A| ColA[org_tesla]
+    TenantCols -->|Tenant B| ColB[org_spacex]
+    
+    subgraph MongoDB Cluster
+        MasterDB
+        ColA
+        ColB
+    end
+```
+
 ### Design Choices
 1. **Dynamic Collections**: Each organization (tenant) gets its own collection (`org_{name}`) created on the fly. This ensures logical data isolation while keeping the database management simple.
 2. **Master DB**: Stores `users` and `organizations` metadata in proper collections.
