@@ -158,14 +158,14 @@
                         if (body) opts.body = JSON.stringify(body);
 
                         const res = await fetch(url, opts);
+                        const text = await res.text();
+                        let data;
                         try {
-                            data = await res.json();
+                            data = JSON.parse(text);
                         } catch (err) {
-                            // Valid JSON failed, try to read text to see the HTML error
-                            const text = await res.text();
                             data = {
                                 detail: "Non-JSON response",
-                                raw: text.substring(0, 500) // First 500 chars of HTML
+                                raw: text.substring(0, 500)
                             };
                         }
 
